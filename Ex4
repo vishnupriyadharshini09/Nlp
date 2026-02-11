@@ -1,0 +1,71 @@
+from collections import Counter
+from nltk.util import ngrams
+
+# Training data
+text = """speech recognition systems help users type faster.
+speech recognition models predict the next word.
+predictive text systems use language models.
+speech recognition and predictive text are important."""
+tokens = text.split()
+
+# N-grams
+ug = Counter(tokens)
+bg = Counter(ngrams(tokens, 2))
+tg = Counter(ngrams(tokens, 3))
+
+V = len(ug)
+k = 1
+
+# Input typed by user
+input = ["speech", "recognition"]
+
+# Candidate next words
+nextwords = set(tokens)
+
+scores = {}
+
+for word in nextwords:
+    # Laplace smoothing (bigram)
+    laplace = (bg[(input[1], word)] + 1) / (ug[input[1]] + V)
+
+    # Add-k smoothing
+    addk = (bg[(input[1], word)] + k) / (ug[input[1]] + k * V)
+
+    # Backoff model
+    if tg[(input[0], input[1], word)] > 0:
+        backoff = tg[(input[0], input[1], word)] / bg[(input[0], input[1])]
+    elif bg[(input[1], word)] > 0:
+        backoff = bg[(input[1], word)] / ug[input[1]]
+    else:
+        backoff = ug[word] / sum(ug.values())
+
+    # Linear interpolation
+    i1, i2, i3 = 0.5, 0.3, 0.2
+    tri = tg[(input[0], input[1], word)] / bg[(input[0], input[1])] if bg[(input[0], input[1])] > 0 else 0
+    bi = bg[(input[1], word)] / ug[input[1]] if ug[input[1]] > 0 else 0
+    uni = ug[word] / sum(ug.values())
+
+    interp = i1*tri + i2*bi + i3*uni
+
+    # Final score (average)
+    scores[word] = (laplace + addk + backoff + interp) / 4
+
+# Sort and suggest top words
+suggestions = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:3]
+
+print("Input:", " ".join(input))
+print("Next word suggestions:")
+for w, p in suggestions:
+    print(w)
+
+
+
+
+Ouput
+Input: speech recognition
+Next word suggestions:
+systems
+and
+models
+
+
