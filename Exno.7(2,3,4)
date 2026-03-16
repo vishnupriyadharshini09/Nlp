@@ -1,0 +1,100 @@
+Cosine Similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+p1 = "The language learning platform helps users improve vocabulary."
+p2 = "This system suggests synonyms to expand vocabulary."
+vec = TfidfVectorizer().fit_transform([p1, p2])
+score = cosine_similarity(vec[0], vec[1])[0][0]
+level = "High" if score>=0.75 else "Medium" if score>=0.40 else "Low"
+print("Cosine Score:", score)
+print("Similarity Level:", level)
+
+Input
+"The language learning platform helps users improve vocabulary."
+"This system suggests synonyms to expand vocabulary."
+
+Output
+Cosine Score: 0.07244081925041986
+Similarity Level: Low
+
+
+
+
+
+
+
+
+
+
+Jaccard Similarity
+p1 = "The language learning platform helps users improve vocabulary."
+p2 = "This system suggests synonyms to expand vocabulary."
+set1, set2 = set(p1.lower().split()), set(p2.lower().split())
+score = len(set1 & set2) / len(set1 | set2)
+level = "High" if score>=0.75 else "Medium" if score>=0.40 else "Low"
+print("Jaccard Score:", score)
+print("Similarity Level:", level)
+
+Input
+"The language learning platform helps users improve vocabulary."
+"This system suggests synonyms to expand vocabulary."
+
+Output
+Jaccard Score: 0.07142857142857142
+Similarity Level: Low
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BERT Similarity (using HuggingFace)
+from transformers import BertTokenizer,BertModel
+from sklearn.metrics.pairwise import cosine_similarity
+token=BertTokenizer.from_pretrained("bert-base-uncased")
+#without case sensitive
+model=BertModel.from_pretrained("bert-base-uncased")
+p1="The language learning platform helps users improve vocabulary."
+p2="This system suggests synonyms to expand vocabulary."
+#average of all tokens and create one vector PT PyTorch
+emb1=model(**token(p1,return_tensors="pt")).last_hidden_state.mean(1).detach()
+emb2=model(**token(p2,return_tensors="pt")).last_hidden_state.mean(1).detach()
+
+score=cosine_similarity(emb1,emb2)[0][0]
+level = "High" if score>=0.75 else "Medium" if score>=0.40 else "Low"
+print("Robert Score:", score)
+print("Similarity Level:", level)
+
+Input
+"The language learning platform helps users improve vocabulary."
+"This system suggests synonyms to expand vocabulary."
+
+Output
+
+
+
+
+4. 🔹 RoBERTa Similarity Code
+
+from transformers import RobertaTokenizer, RobertaModel
+from sklearn.metrics.pairwise import cosine_similarity
+token = RobertaTokenizer.from_pretrained("roberta-base")
+model = RobertaModel.from_pretrained("roberta-base")
+p1 = "The language learning platform helps users improve vocabulary."
+p2 = "This system suggests synonyms to expand vocabulary."
+emb1 = model(**token(p1, return_tensors="pt")).last_hidden_state.mean(1).detach()
+emb2 = model(**token(p2, return_tensors="pt")).last_hidden_state.mean(1).detach()
+score = cosine_similarity(emb1, emb2)[0][0]
+level = "High" if score>=0.75 else "Medium" if score>=0.40 else "Low"
+print("RoBERTa Score:", score)
+print("Similarity Level:", level)
+
